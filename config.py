@@ -8,6 +8,6 @@ test_data_dir = r'data\test'
 checkpoints_dir = 'checkpoints\\'
 
 batch_size = 32
-steps_per_epoch_train = 10
-steps_per_epoch_test = 10
+steps_per_epoch_train = 50
+steps_per_epoch_test = 50
 epoch = 100
