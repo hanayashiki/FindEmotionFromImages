@@ -39,17 +39,17 @@ for layer in base_model.layers:
 
 model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy', precision_0, precision_1, precision_2, precision_3, precision])
 
-print(img_predict(model, 'test_single_pic\\amusement746.jpg'))
+print(img_predict(model, 'test_single_pic\\xidada.jpg'))
 
-# model.fit_generator(
-#     train_data_generator,
-#     steps_per_epoch=steps_per_epoch_train,
-#     epochs=epoch,
-#     validation_data=test_data_generator,
-#     validation_steps=steps_per_epoch_test,
-#     callbacks=[ModelCheckpoint(
-#         filepath=checkpoints_dir + model_weight,
-#         save_best_only=True,
-#         save_weights_only=True
-#     )]
-# )
+model.fit_generator(
+    train_data_generator,
+    steps_per_epoch=steps_per_epoch_train,
+    epochs=epoch,
+    validation_data=test_data_generator,
+    validation_steps=steps_per_epoch_test,
+    callbacks=[ModelCheckpoint(
+        filepath=checkpoints_dir + model_weight,
+        save_best_only=True,
+        save_weights_only=True
+    )]
+)
