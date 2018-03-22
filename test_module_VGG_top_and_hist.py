@@ -11,45 +11,49 @@ from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from config import *
-from datagen import *
 from single_predict import *
 from rgb2hsv import *
 
-base_model = VGG16(weights='imagenet', include_top=True)
-hist = Histogram(base_model.input)
-dense = Dense(30, activation='relu', name='connect_basemodel')(hist)
-concat = Concatenate()([dense, base_model.output])
-prediction = Dense(img_category_count, activation='softmax', name='prediction')(concat)
-
 model_weight = 'vgg_top_4cat_hist_preprocessor.h5'
 
-model = Model(inputs=base_model.input, outputs=prediction)
-try:
-    if os.path.exists(checkpoints_dir + model_weight):
-        model.load_weights(checkpoints_dir + model_weight)
-        print("Load old weights. ")
-    else:
-        print("Use new weights.")
-except:
-    print("File error. Use new weights.")
+def getModel():
+    base_model = VGG16(weights='imagenet', include_top=True)
+    # freeze vgg16 weights
+    for layer in base_model.layers:
+        layer.trainable = False
+    hist = Histogram(base_model.input)
+    dense = Dense(30, activation='relu', name='connect_basemodel')(hist)
+    concat = Concatenate()([dense, base_model.output])
+    prediction = Dense(img_category_count, activation='softmax', name='prediction')(concat)
 
-# freeze vgg16 weights
-for layer in base_model.layers:
-    layer.trainable = False
+    model = Model(inputs=base_model.input, outputs=prediction)
+    model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy', precision_0, precision_1, precision_2, precision_3, precision])
+    return model
 
-model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy', precision_0, precision_1, precision_2, precision_3, precision])
+if __name__ == '__main__':
+    from datagen import *
+    model = getModel()
 
-print(img_predict(model, 'test_single_pic\\xidada.jpg'))
+    try:
+        if os.path.exists(checkpoints_dir + model_weight):
+            model.load_weights(checkpoints_dir + model_weight)
+            print("Load old weights. ")
+        else:
+            print("Use new weights.")
+    except:
+        print("File error. Use new weights.")
 
-model.fit_generator(
-    train_data_generator,
-    steps_per_epoch=steps_per_epoch_train,
-    epochs=epoch,
-    validation_data=test_data_generator,
-    validation_steps=steps_per_epoch_test,
-    callbacks=[ModelCheckpoint(
-        filepath=checkpoints_dir + model_weight,
-        save_best_only=True,
-        save_weights_only=True
-    )]
-)
+    print(img_predict(model, 'test_single_pic\\xidada.jpg'))
+
+    model.fit_generator(
+        train_data_generator,
+        steps_per_epoch=steps_per_epoch_train,
+        epochs=epoch,
+        validation_data=test_data_generator,
+        validation_steps=steps_per_epoch_test,
+        callbacks=[ModelCheckpoint(
+            filepath=checkpoints_dir + model_weight,
+            save_best_only=True,
+            save_weights_only=True
+        )]
+    )
