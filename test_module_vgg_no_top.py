@@ -1,5 +1,5 @@
 import keras
-from keras.applications.resnet50 import ResNet50
+from keras.applications.vgg16 import VGG16
 from keras.applications.imagenet_utils import preprocess_input
 from keras.layers import Dense, Input, Concatenate
 from keras.models import Model
@@ -14,16 +14,17 @@ from config import *
 from single_predict import *
 from rgb2hsv import *
 
-model_weight = 'resnet.h5'
+model_weight = 'vgg_no_top_10epochs.h5'
+epoch = 10
 
 def getModel():
-    base_model = ResNet50(weights='imagenet', include_top=True)
+    base_model = VGG16(weights='imagenet', include_top=True)
     # freeze vgg16 weights
     for layer in base_model.layers:
         layer.trainable = False
     hist = Histogram(base_model.input)
     dense = Dense(30, activation='relu', name='connect_basemodel')(hist)
-    concat = Concatenate()([dense, base_model.output])
+    concat = Concatenate()([dense, base_model.get_layer('fc2').output])
     prediction = Dense(img_category_count, activation='softmax', name='prediction')(concat)
 
     model = Model(inputs=base_model.input, outputs=prediction)
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     except:
         print("File error. Use new weights.")
 
-    print(img_predict(model, 'test_single_pic\\xidada.jpg'))
+    print(img_predict(model, 'test_single_pic\\sad.png'))
 
     # model.fit_generator(
     #     train_data_generator,
@@ -57,4 +58,4 @@ if __name__ == '__main__':
     #         save_weights_only=True
     #     )]
     # )
-    model.summary()
+    # model.summary()

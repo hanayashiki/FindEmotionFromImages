@@ -18,7 +18,7 @@ def precision_k(y_true, y_pred, k):
             , K.floatx())
         ) / \
         K.sum(
-            K.cast(K.equal(K.argmax(y_true, axis=-1), k), K.floatx())
+            K.cast(K.equal(K.argmax(y_pred, axis=-1), k), K.floatx())
         )
 
 def precision_0_3(y_true, y_pred):
